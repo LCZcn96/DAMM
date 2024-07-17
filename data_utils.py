@@ -7,7 +7,6 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# 归一化
 def min_max_scale(df):
     scaler = MinMaxScaler()
     scaled_data = scaler.fit_transform(df)
@@ -55,7 +54,6 @@ def preprocess_data(rnaseq_data, methy_data, mirna_data, scnv_data,
     clinical_data["gender"] = clinical_data["gender"].apply(
         lambda x: 0 if x == "male" else 1)
 
-    # 映射病理分期数据到0-3
     pathologic_stage_map = {
         "stagei": 0,
         "stageii": 1,
@@ -66,7 +64,6 @@ def preprocess_data(rnaseq_data, methy_data, mirna_data, scnv_data,
     clinical_data["pathologic_stage"] = clinical_data["pathologic_stage"].map(
         pathologic_stage_map)
 
-    # 映射癌症类型数据到0-2
     cancer_map = {
         "KIRP": 0,
         "KIRC": 1,
@@ -86,7 +83,6 @@ def preprocess_data(rnaseq_data, methy_data, mirna_data, scnv_data,
 
 def load_data():
 
-    # 读取基因表达、甲基化、miRNA数据
     clinical_data = pl.read_csv("./data/Clinical.csv")
     methy_data = pl.read_csv("./data/kidney_methylation.csv")
     mirna_data = pl.read_csv("./data/kidney_miRNA.csv")
