@@ -42,28 +42,23 @@ class AdapterWithHyperNet(nn.Module):
         self.omics_out = {}
 
     def forward(self, x, hypernet_output, omics_id):
-        # 记录输入x,用于最后的residual connection
         self.residual = x
         self.omics_res[omics_id] = self.residual
 
-        # Adapter layer-1: Down projection
         down_proj_matrix = torch.einsum('ik,bkj,jl->bil', self.down_proj_left, hypernet_output, self.down_proj_right)
         self.down_proj_matrix = down_proj_matrix
 
         z = torch.einsum('bij,bj->bi', down_proj_matrix, x)
         z = z + self.bias1
 
-        # Adapter layer-2: Non-linear activation
         z = torch.sigmoid(z)
 
-        # Adapter layer-3: Up projection
         up_proj_matrix = torch.einsum('ik,bkj,jl->bil', self.up_proj_left, hypernet_output, self.up_proj_right)
         self.up_proj_matrix = up_proj_matrix
 
         output = torch.einsum('bij,bj->bi', up_proj_matrix, z)
         output = output + self.bias2
 
-        # Adapter layer-4: Domain norm
         mean = output.mean(dim=0)
         var = output.var(dim=0)
         output_norm = (output - mean) / torch.sqrt(var + self.eps)
@@ -71,5 +66,4 @@ class AdapterWithHyperNet(nn.Module):
 
         self.omics_out[omics_id] = output
 
-        # Residual connection
         return self.residual + output
